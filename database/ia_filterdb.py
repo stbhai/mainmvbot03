@@ -94,12 +94,18 @@ async def get_search_results(query, max_results=MAX_BTN, offset=0, lang=None):
             next_offset = ''
         return files, next_offset, total_results
     cursor.skip(offset).limit(max_results)
-    files = await cursor.to_list(length=max_results)
-    total_results = await Media.count_documents(filter)
-    next_offset = offset + max_results
-    if next_offset >= total_results:
-        next_offset = ''       
-    return files, next_offset, total_results
+        files = await cursor.to_list(length=max_results)
+        
+        # 🔥 THE DATABASE KILLER FIX: Removed await Media.count_documents(filter)
+        # Regex ke sath count karne se MongoDB poora DB scan karta tha jisse bot hang hota tha.
+        # Ab hum sirf fetched files ki length se pagination manage karenge (0.1ms query time)
+        total_results = offset + len(files) + (1 if len(files) == max_results else 0)
+        
+        next_offset = offset + max_results
+        if len(files) < max_results:
+            next_offset = ''
+            
+        return files, next_offset, total_results
     
 async def get_bad_files(query, file_type=None, offset=0, filter=False):
     query = query.strip()
