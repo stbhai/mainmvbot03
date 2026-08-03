@@ -422,11 +422,14 @@ async def free_plan_callback(client, query):
             InlineKeyboardButton('Close ❌', callback_data="close_data") 
         ]]
         
+        import pyrogram # Import at top or here to ensure exception is caught
         from pyrogram.types import InputMediaPhoto
         await query.message.edit_media(
             media=InputMediaPhoto(media=ALL_PLANS_PRICE_IMG, caption=script.FREE_TXT.format(query.from_user.mention), parse_mode=enums.ParseMode.HTML), 
             reply_markup=InlineKeyboardMarkup(buttons)
         )
+    except pyrogram.errors.exceptions.bad_request_400.MessageNotModified:
+        pass # Ye double-click/same-content par spam print hone se rokega
     except Exception as e:
         print(f"Error in free_plan: {e}")
 # ==========================================

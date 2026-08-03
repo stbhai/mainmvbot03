@@ -683,11 +683,13 @@ async def bcast_loop(client):
                     
                     if last_run != current_run_id:
                         await explore_bcast_db.update_one({"_id": "settings"}, {"$set": {"last_run": current_run_id}})
-                        greeting = "Good Morning 🌅" if now.hour == 9 else "Good Evening 🌌"
+                        greeting = "Good Morning ☀️" if now.hour == 9 else "Good Evening 🌙"
                         asyncio.create_task(run_explore_broadcast(client, greeting))
-        except Exception as e:
-            print(f"Broadcast Loop Error: {e}")
-            
+        except asyncio.CancelledError:
+            break # Loop safely stop karne ke liye
+        except Exception:
+            pass # DB Network timeout hone par silently ignore karega aur bot hang nahi hoga
+        
         await asyncio.sleep(45)
 
 BCAST_TASK_STARTED = False

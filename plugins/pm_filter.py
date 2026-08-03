@@ -3513,7 +3513,7 @@ async def auto_filter(client, msg, spoll=False , pm_mode = False):
                 original_query = DISAMBIGUATION_MAP.get(search, search)
                 season_buttons.append([InlineKeyboardButton("🔙 Back To Quary", callback_data=f"spell#{original_query[:45]}")])
                 
-                # 🔥 PRO-FIX 2: Safe fallback for Group Chats (NoneType check)
+                # 🔥 PRO-FIX 2: Safe fallback without Console Spam
                 try:
                     if 'searching_msg' in locals() and searching_msg and not spoll:
                         await searching_msg.edit_text(text, reply_markup=InlineKeyboardMarkup(season_buttons))
@@ -3521,8 +3521,25 @@ async def auto_filter(client, msg, spoll=False , pm_mode = False):
                         await msg.message.edit_text(text, reply_markup=InlineKeyboardMarkup(season_buttons))
                     else:
                         await message.reply_text(text, reply_markup=InlineKeyboardMarkup(season_buttons))
-                except Exception as e:
-                    print(f"Season UI Error: {e}")
+                except pyrogram.errors.exceptions.bad_request_400.MessageIdInvalid:
+                    # Message delete ho chuka hai, seedha naya message bhej do
+                    try:
+                        await message.reply_text(text, reply_markup=InlineKeyboardMarkup(season_buttons))
+                    except:
+                        pass
+                except pyrogram.errors.exceptions.bad_request_400.MessageNotModified:
+                    pass # Same button dubara click hone par spam roko
+                except Exception:
+                    # Koi bhi aur error ho toh terminal spam kiye bina fallback chalao
+                    try:
+                        await message.reply_text(text, reply_markup=InlineKeyboardMarkup(season_buttons))
+                    except:
+                        pass
+                    # 🔥 FALLBACK: Agar edit fail ho (Message delete ho gaya ho), toh instantly NAYA message bhej do
+                    try:
+                        await message.reply_text(text, reply_markup=InlineKeyboardMarkup(season_buttons))
+                    except:
+                        pass
                 
                 return # Series ke liye execution yahan ruko
     is_premium = await db.has_premium_access(req) if req else False
