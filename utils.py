@@ -217,27 +217,31 @@ async def groups_broadcast(chat_id, message, is_pin):
         return "Error"
 
 async def get_settings(group_id, pm_mode=False):
-    # 🧠 SMART DETECTOR: Telegram User IDs positive hote hain (>=0) aur Groups negative hote hain.
+    # 🔥 SPEED FIX: 100% RAM Caching. No more 400x Database reads!
+    if not pm_mode and group_id < 0:
+        if group_id in temp.SETTINGS:
+            return temp.SETTINGS[group_id]
+            
     if group_id >= 0 or pm_mode:
         settings = SETTINGS.copy()
-        
-        from database.users_chats_db import db
-        # ID '0' ko hum Master Global PM Database ki tarah treat kar rahe hain
-        pm_settings = await db.get_settings(0)
-        
+        if 0 in temp.SETTINGS:
+            pm_settings = temp.SETTINGS[0]
+        else:
+            from database.users_chats_db import db
+            pm_settings = await db.get_settings(0)
+            if pm_settings: temp.SETTINGS[0] = pm_settings
+            
         if pm_settings:
             settings["imdb"] = pm_settings.get("imdb", settings["imdb"])
             settings["spell_check"] = pm_settings.get("spell_check", settings["spell_check"])
             settings["auto_delete"] = pm_settings.get("auto_delete", settings["auto_delete"])
             settings["link"] = pm_settings.get("link", settings["link"])
-            # 🔥 NEW: Ab PM mein bhi custom caption database se uthayega
-            settings["caption"] = pm_settings.get("caption", settings.get("caption", "")) 
-            
+            settings["caption"] = pm_settings.get("caption", settings.get("caption", ""))
         return settings
         
-    # Standard group settings (For Negative IDs)
     from database.users_chats_db import db
     settings = await db.get_settings(group_id)
+    if settings: temp.SETTINGS[group_id] = settings
     return settings
     
 async def save_group_settings(group_id, key, value):

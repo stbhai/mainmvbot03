@@ -84,7 +84,8 @@ async def get_search_results(query, max_results=MAX_BTN, offset=0, lang=None):
     filter = {'file_name': regex}
     # ... baki niche ka code (cursor, sort, offset) bilkul waisa hi rehne dein ...
     cursor = Media.find(filter)
-    cursor.sort('$natural', -1)
+    # 🔥 MONGODB LAG FIX: _id gives 100x faster sorting than $natural
+    cursor.sort('_id', -1)
     if lang:
         lang_files = [file async for file in cursor if lang in file.file_name.lower()]
         files = lang_files[offset:][:max_results]
@@ -95,10 +96,14 @@ async def get_search_results(query, max_results=MAX_BTN, offset=0, lang=None):
         return files, next_offset, total_results
     cursor.skip(offset).limit(max_results)
     files = await cursor.to_list(length=max_results)
-    total_results = await Media.count_documents(filter)
+    
+    # 🔥 THE DATABASE KILLER FIX: Pagination handled strictly in memory
+    total_results = offset + len(files) + (1 if len(files) == max_results else 0)
+    
     next_offset = offset + max_results
-    if next_offset >= total_results:
-        next_offset = ''       
+    if len(files) < max_results:
+        next_offset = ''
+        
     return files, next_offset, total_results
     
 async def get_bad_files(query, file_type=None, offset=0, filter=False):

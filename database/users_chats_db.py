@@ -501,6 +501,7 @@ class Database:
         
     # --- ADVANCED PREMIUM TITLES LOGIC (CUSTOM TEXT) ---
     async def add_premium_title(self, title, image_url, custom_text):
+        self.prem_titles_cache = None # 🔥 FIX: Reset cache on update
         await mydb.premium_titles.update_one(
             {"title": title.lower()}, 
             {"$set": {
@@ -512,11 +513,23 @@ class Database:
         )
 
     async def remove_premium_title(self, title):
+        self.prem_titles_cache = None # 🔥 FIX: Reset cache on delete
         await mydb.premium_titles.delete_one({"title": title.lower()})
 
     async def get_premium_titles(self):
+        import time
+        # 🔥 THE SPEED FIX: Cache data in RAM for 10 minutes (600s) to stop MongoDB lag
+        if not hasattr(self, "prem_titles_cache"):
+            self.prem_titles_cache = None
+            self.prem_titles_cache_time = 0
+            
+        if self.prem_titles_cache is not None and (time.time() - self.prem_titles_cache_time) < 600:
+            return self.prem_titles_cache
+            
         cursor = mydb.premium_titles.find({})
-        return [doc async for doc in cursor]
+        self.prem_titles_cache = [doc async for doc in cursor]
+        self.prem_titles_cache_time = time.time()
+        return self.prem_titles_cache
 
     async def get_premium_info(self, file_name):
         file_name = file_name.lower()

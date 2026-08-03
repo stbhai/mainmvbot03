@@ -31,6 +31,13 @@ from pymongo import UpdateOne
 from cachetools import TTLCache
 import urllib.parse
 
+# 🔥 THE 120-SECOND FIX: Background Task for Deleting Messages
+async def background_delete(msg, time_sec):
+    await asyncio.sleep(time_sec)
+    try:
+        await msg.delete()
+    except:
+        pass
 # RAM Saver: Maximum 2000 items rahenge, aur har item 2 ghante (7200 sec) baad khud delete ho jayega.
 BUTTONS = TTLCache(maxsize=2000, ttl=7200)
 FILES_ID = TTLCache(maxsize=2000, ttl=7200)
@@ -147,36 +154,38 @@ async def global_button_firewall(client, query):
         pass
 # =====================================================
 async def get_cached_sorted_dicts(search):
-    global GLOBAL_SEARCH_CACHE
-    current_time = time.time()
-    
-    # 1. Time-Based Cleanup: 10 minute purane searches ko kachre me daalo
-    keys_to_delete = [k for k, v in GLOBAL_SEARCH_CACHE.items() if current_time - v['time'] > 600]
-    for k in keys_to_delete:
-        del GLOBAL_SEARCH_CACHE[k]
+        global GLOBAL_SEARCH_CACHE
+        current_time = time.time()
         
-    search_lower = search.lower().strip()
-    
-    # 2. Agar result Memory me hai, toh bina Database hit kiye wahi se de do
-    if search_lower in GLOBAL_SEARCH_CACHE:
-        return GLOBAL_SEARCH_CACHE[search_lower]["data"]
+        # 1. Time-Based Cleanup: 10 minute purane searches ko kachre me daalo
+        keys_to_delete = [k for k, v in GLOBAL_SEARCH_CACHE.items() if current_time - v['time'] > 600]
+        for k in keys_to_delete:
+            del GLOBAL_SEARCH_CACHE[k]
+            
+        search_lower = search.lower().strip()
         
-    # 3. Agar Memory me nahi hai, toh Database se nikalo
-    files, _, _ = await get_search_results(search, max_results=300, offset=0)
-    if not files: 
-        return []
+        # 2. Agar result Memory me hai, toh bina Database hit kiye wahi se de do
+        if search_lower in GLOBAL_SEARCH_CACHE:
+            return GLOBAL_SEARCH_CACHE[search_lower]["data"]
+            
+        # 3. Agar Memory me nahi hai, toh Database se nikalo
+        files, _, _ = await get_search_results(search, max_results=300, offset=0)
+        if not files: 
+            return []
+            
+        # 🔥 THE EVENT-LOOP FREEZE FIX:
+        # get_vip_sorted_files 300 files ke liye thousands of regex match karta hai. 
+        # Isko asyncio thread me daalna zaruri hai warna heavy traffic me ye pure bot ko hang kar dega.
+        sorted_dicts = await asyncio.to_thread(get_vip_sorted_files, files, search)
         
-    sorted_dicts = get_vip_sorted_files(files, search)
-    
-    # 4. OVERLOAD PROTECTION (RAM FULL HONE SE ROKEGA)
-    # Agar cache ki limit 200 cross ho gayi, toh sabse purana search uda do
-    if len(GLOBAL_SEARCH_CACHE) >= MAX_CACHE_SIZE:
-        oldest_key = next(iter(GLOBAL_SEARCH_CACHE))
-        del GLOBAL_SEARCH_CACHE[oldest_key]
-        
-    # Naye search ko RAM me save karo
-    GLOBAL_SEARCH_CACHE[search_lower] = {"time": current_time, "data": sorted_dicts}
-    return sorted_dicts
+        # 4. OVERLOAD PROTECTION (RAM FULL HONE SE ROKEGA)
+        if len(GLOBAL_SEARCH_CACHE) >= MAX_CACHE_SIZE:
+            oldest_key = next(iter(GLOBAL_SEARCH_CACHE))
+            del GLOBAL_SEARCH_CACHE[oldest_key]
+            
+        # Naye search ko RAM me save karo
+        GLOBAL_SEARCH_CACHE[search_lower] = {"time": current_time, "data": sorted_dicts}
+        return sorted_dicts
 	
 # === RAPID-FUZZ IN-MEMORY CACHE SYSTEM (VIP + PHONETIC EDITION) ===
 IN_MEMORY_TITLES = []
@@ -922,11 +931,8 @@ async def advantage_spell_chok(message, searching_msg=None):
     else:
         k = await message.reply_text(text=not_found_text, reply_markup=InlineKeyboardMarkup(button), parse_mode=enums.ParseMode.MARKDOWN)
     
-    await asyncio.sleep(120)
-    try:
-        await k.delete()
-    except:
-        pass
+    # 🔥 THE 120-SECOND FIX: Runs in background without locking the bot!
+    asyncio.create_task(background_delete(k, 120))
     return
 
 from info import ADMINS
@@ -950,7 +956,8 @@ async def refresh_fuzz_cache(client, message):
 
 @Client.on_message(filters.private & filters.text & filters.incoming)
 async def pm_search(client, message):
-    await mdb.update_top_messages(message.from_user.id, message.text)
+    # 🔥 SPEED FIX: Database Write ko background me daal diya taaki bot freeze na ho
+    asyncio.create_task(mdb.update_top_messages(message.from_user.id, message.text))
     bot_id = client.me.id
     user_id = message.from_user.id
     
@@ -1001,7 +1008,8 @@ async def group_search(client, message):
     PREMIUM_GROUP_ID = -1003920104895  
     if message.chat.id == PREMIUM_GROUP_ID:
         return
-    await mdb.update_top_messages(message.from_user.id, message.text)
+    # 🔥 SPEED FIX: DB Write is now non-blocking
+    asyncio.create_task(mdb.update_top_messages(message.from_user.id, message.text))
     user_id = message.from_user.id if message.from_user else None
     chat_id = message.chat.id
     settings = await get_settings(chat_id)
@@ -3327,11 +3335,11 @@ async def auto_filter(client, msg, spoll=False , pm_mode = False):
             # 🔥 DON'T DELETE: Pass the message to edit it
             return await advantage_spell_chok(msg, searching_msg)
             
-        # 💥 THE PRO DISAMBIGUATION ENGINE V2.3 (Strict Match Fix) 💥
+        #   THE PRO DISAMBIGUATION ENGINE V2.3 (Strict Match Fix)
         has_exact_year = bool(re.search(r'\b(19\d{2}|20\d{2})\b', search))
         
-        all_raw_files, _, _ = await get_search_results(search, max_results=300, offset=0)
-        sorted_all_files = get_vip_sorted_files(all_raw_files, search)
+        # 🔥 SPEED FIX: Database par heavy load daalne ki jagah already fetched RAM Cache use karo
+        sorted_all_files = await get_cached_sorted_dicts(search)
         
         unique_titles = {}
         highest_match_score = 0
@@ -3442,12 +3450,8 @@ async def auto_filter(client, msg, spoll=False , pm_mode = False):
                     parse_mode=enums.ParseMode.HTML
                 )
             
-            #   ANTI-CLUTTER AUTO-DESTRUCT (120 seconds)
-            await asyncio.sleep(120)
-            try:
-                await k.delete()
-            except:
-                pass
+            # 🔥 THE 120-SECOND FIX: Runs in background without locking the bot!
+            asyncio.create_task(background_delete(k, 120))
             return
             
         # Agar seedha result mil gaya bina menu ke, tab message delete mat karo, 
