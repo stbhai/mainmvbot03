@@ -9,6 +9,10 @@ async def ping_server():
     sleep_time = PING_INTERVAL
     while True:
         await asyncio.sleep(sleep_time)
+        # 🔥 FIX: Agar FQDN/URL khali hai, toh ping skip kar do, error mat do
+        if not URL or URL == "":
+            continue
+            
         try:
             async with aiohttp.ClientSession(
                 timeout=aiohttp.ClientTimeout(total=10)
@@ -18,4 +22,4 @@ async def ping_server():
         except TimeoutError:
             logging.warning("Couldn't connect to the site URL..!")
         except Exception:
-            traceback.print_exc()
+            pass # Traceback print karke logs gande mat karo
