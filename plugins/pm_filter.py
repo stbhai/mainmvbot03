@@ -3731,26 +3731,24 @@ async def auto_filter(client, msg, spoll=False , pm_mode = False):
         try:
             if settings['auto_delete']:
                 k = await message.reply_photo(photo=imdb.get('poster'), caption=cap[:1024] + links + del_msg, parse_mode=enums.ParseMode.HTML, reply_markup=InlineKeyboardMarkup(btn))
-                await asyncio.sleep(DELETE_TIME)
-                await k.delete()
+                asyncio.create_task(background_delete(k, DELETE_TIME))
             else:
-                await message.reply_photo(photo=imdb.get('poster'), caption=cap[:1024] + links + js_ads, reply_markup=InlineKeyboardMarkup(btn))                    
+                await message.reply_photo(photo=imdb.get('poster'), caption=cap[:1024] + links + js_ads, reply_markup=InlineKeyboardMarkup(btn))
+                            
         except (MediaEmpty, PhotoInvalidDimensions, WebpageMediaEmpty):
             pic = imdb.get('poster')
             poster = pic.replace('.jpg', "._V1_UX360.jpg")
-            try: # 🔥 PRO-FIX: Second attempt ko try-except mein wrap kiya taaki dead URL par bot crash na ho
+            try: #   PRO-FIX: Second attempt ko try-except mein wrap kiya taaki dead URL par bot crash na ho
                 if settings["auto_delete"]:
                     k = await message.reply_photo(photo=poster, caption=cap[:1024] + links + js_ads, parse_mode=enums.ParseMode.HTML, reply_markup=InlineKeyboardMarkup(btn))
-                    await asyncio.sleep(DELETE_TIME)
-                    await k.delete()
+                    asyncio.create_task(background_delete(k, DELETE_TIME))
                 else:
                     await message.reply_photo(photo=poster, caption=cap[:1024] + links + js_ads, parse_mode=enums.ParseMode.HTML, reply_markup=InlineKeyboardMarkup(btn))
             except Exception:
                 # Agar fallback image bhi load na ho, toh chup-chaap text message bhej do
                 if settings["auto_delete"]:
                     k = await message.reply_text(cap + links + js_ads, parse_mode=enums.ParseMode.HTML, reply_markup=InlineKeyboardMarkup(btn), disable_web_page_preview=True)
-                    await asyncio.sleep(DELETE_TIME)
-                    await k.delete()
+                    asyncio.create_task(background_delete(k, DELETE_TIME))
                 else:
                     await message.reply_text(cap + links + js_ads, parse_mode=enums.ParseMode.HTML, reply_markup=InlineKeyboardMarkup(btn), disable_web_page_preview=True)
         except Exception as e:
@@ -3758,17 +3756,15 @@ async def auto_filter(client, msg, spoll=False , pm_mode = False):
             if settings["auto_delete"]:
                 try:
                     k = await message.reply_text(cap + links + js_ads, parse_mode=enums.ParseMode.HTML, reply_markup=InlineKeyboardMarkup(btn), disable_web_page_preview=True)
+                    asyncio.create_task(background_delete(k, DELETE_TIME))
                 except Exception as e:
                     print("error", e)
-                await asyncio.sleep(DELETE_TIME)
-                await k.delete()
             else:
                 await message.reply_text(cap + links + js_ads, parse_mode=enums.ParseMode.HTML, reply_markup=InlineKeyboardMarkup(btn), disable_web_page_preview=True)
     else:
         k = await message.reply_text(text=cap + links + js_ads, disable_web_page_preview=True, reply_markup=InlineKeyboardMarkup(btn), parse_mode=enums.ParseMode.HTML, reply_to_message_id=message.id)
         if settings['auto_delete']:
-            await asyncio.sleep(DELETE_TIME)
-            await k.delete()
+            asyncio.create_task(background_delete(k, DELETE_TIME))
 from info import ADMINS
 
 @Client.on_message(filters.command("update_cache") & filters.user(ADMINS))
