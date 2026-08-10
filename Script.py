@@ -344,7 +344,7 @@ Premium lene par aapko hamare Secret 18+ Channel ka access bhi milega
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
 💳 <b>Payment Options:</b>  
 QR Scan (GPay / PhonePe / Paytm)  
-Or UPI ID:👉 <code>moviestorege@ybl</code>
+Or UPI ID:👉 <code>shubham82828@ybl</code>
 
 ⚡ <b>2 min activation after screenshot</b>  
 ⏳ <b>Delay karoge toh activation late hoga</b>
