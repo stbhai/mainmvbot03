@@ -78,7 +78,7 @@ REQUEST_CHANNEL = int(request_channel) if request_channel and id_pattern.search(
 START_IMG = (environ.get('START_IMG', 'https://i.ibb.co/2YPtt7ZV/x.jpg')).split()
 FORCESUB_IMG = environ.get('FORCESUB_IMG', 'https://i.ibb.co/MkNNn954/x.jpg')
 REFER_PICS = (environ.get("REFER_PICS", "https://i.ibb.co/8gZGWnWK/x.jpg")).split() 
-PAYPICS = (environ.get('PAYPICS', 'https://kommodo.ai/i/yQQphM8SdR9pFRy3kwsm')).split()
+PAYPICS = (environ.get('PAYPICS', 'https://i.ibb.co/CpZdBkX3/x.jpg')).split()
 SUBSCRIPTION = (environ.get('SUBSCRIPTION', 'https://i.ibb.co/GfC0C3CR/x.jpg'))
 REACTIONS = ["👀", "😱", "🔥", "😍", "🎉", "🥰", "😇", "⚡"]
 #---------------------------------------------------------------
