@@ -24,7 +24,7 @@ PREMIUM_BTN_IMG = "https://i.ibb.co/GfC0C3CR/x.jpg"
 MY_PLAN_IMG = "https://i.ibb.co/RTYS1yKH/x.jpg"
 
 # 4. '💳 Check Plans & Pricing 💰' button click par aane wali image
-ALL_PLANS_PRICE_IMG = "https://kommodo.ai/i/yQQphM8SdR9pFRy3kwsm"
+ALL_PLANS_PRICE_IMG = "https://i.ibb.co/CpZdBkX3/x.jpg"
 
 # 5. Welcome message ke 'My Premium Plan' button (check_myplan callback) click par aane wali image
 NO_PLAN_IMG = "https://i.ibb.co/LDnqh0kK/x.jpg"
