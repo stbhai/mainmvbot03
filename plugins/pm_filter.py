@@ -1751,8 +1751,11 @@ async def fuzback_callback(client, query):
     # User ka original message uthao aur purana search daal kar dubara auto_filter chala do
     user_msg = query.message.reply_to_message if query.message.reply_to_message else query.message
     user_msg.text = original_search
+    
+    # 🔥 PREMIUM LOCK FIX: Original user ka data force-inject karo
+    user_msg.from_user = query.from_user 
+    
     await auto_filter(client, user_msg)
-
 @Client.on_callback_query(filters.regex(r"^qualities#"))
 async def quality_cb_handler(client: Client, query: CallbackQuery):
     _, key, offset, req = query.data.split("#")
@@ -2181,6 +2184,9 @@ async def spell_checker_callback(client, query):
     # 💥 THE MAGIC: Fake a new user message to force the Disambiguation Menu
     user_msg = query.message.reply_to_message if query.message.reply_to_message else query.message
     user_msg.text = search_query
+    
+    # 🔥 PREMIUM LOCK FIX: Original user ka data force-inject karo, warna bot khud ko user maan lega
+    user_msg.from_user = query.from_user 
     
     # Bina spoll ke auto_filter call karenge taaki exact/multiple match check ho
     await auto_filter(client, user_msg)
