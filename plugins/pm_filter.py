@@ -246,7 +246,7 @@ async def build_title_cache():
         clean_name = re.sub(r'(?i)\b(complete|combined|all episodes|comp|part\s*\d+)\b', '', clean_name)
             
         clean_name = re.sub(r'[._]+', ' ', clean_name)
-        clean_name = re.sub(r'[^a-zA-Z0-9\s\-:\',\+&]', '', clean_name)
+        clean_name = re.sub(r'[^a-zA-Z0-9À-ÿ\s\-:\',\+&]', '', clean_name)
         clean_name = ' '.join(clean_name.split()).strip(' -:,').title()
         clean_name = re.sub(r"\'S\b", "'s", clean_name)
 
@@ -515,8 +515,8 @@ def get_vip_sorted_files(files, search_query=""):
         # Sirf Dot (.) aur Underscore (_) ko space banayenge
         clean_name = re.sub(r'[._]+', ' ', clean_name)
         
-        # Hyphen (-), Colon (:), Comma (,), Apostrophe (') allow kar diya
-        clean_name = re.sub(r'[^a-zA-Z0-9\s\-:\',\+&]', '', clean_name) 
+        # Hyphen (-), Colon (:), Comma (,), Apostrophe (') aur Accents (é, á) allow kar diya
+        clean_name = re.sub(r'[^a-zA-Z0-9À-ÿ\s\-:\',\+&]', '', clean_name) 
         
         # Extra spaces hata kar aur aakhir me latakte hue dash/colon ko uda kar Title Case karna
         clean_name = ' '.join(clean_name.split()).strip(' -:,').title()
