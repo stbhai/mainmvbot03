@@ -277,7 +277,7 @@ async def update_lib_cmd(client, message):
             clean_name = re.sub(r'(?i)\b(complete|batch|all episodes|part\s*\d+|s\d{1,2}e\d{1,3})\b', '', clean_name)
                 
             clean_name = re.sub(r'[._]+', ' ', clean_name)
-            clean_name = re.sub(r'[^a-zA-Z0-9\s\-:\',\+&]', '', clean_name)
+            clean_name = re.sub(r'[^a-zA-Z0-9À-ÿ\s\-:\',\+&]', '', clean_name)
             clean_name = ' '.join(clean_name.split()).strip(' -:,').title()
             clean_name = re.sub(r"\'S\b", "'s", clean_name)
             
