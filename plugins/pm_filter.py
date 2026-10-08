@@ -2351,7 +2351,7 @@ async def adopen_cb(client, query):
         
         # 📺 TERA GIF LINK YAHAN DAAL (Eg: Telegraph/ImgBB link)
         # Abhi maine ek samjhane ke liye standard scroll gif daali hai, apni wali replace kar lena
-        TUTORIAL_GIF = "https://kappa.lol/fhTKGg" 
+        TUTORIAL_GIF = "https://kappa.lol/zmnKb9" 
         
         # 🔥 THE EXACT MOMENT: Start 14-Second Timer in Global Memory
         import time
@@ -2421,8 +2421,8 @@ async def checkad_cb(client, query):
         elapsed_time = time.time() - start_time
         
         # 🔥 THE STRICT 14-SECOND SCROLL TRAP
-        if elapsed_time < 25:
-            remaining = int(25 - elapsed_time)
+        if elapsed_time < 30:
+            remaining = int(30 - elapsed_time)
             return await query.answer(
                 f"🚫 VERIFICATION FAILED!\n\n"
                 f"System API: Aapne channel ke bottom tak scroll nahi kiya.\n\n"
