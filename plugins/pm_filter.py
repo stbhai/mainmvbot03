@@ -2421,8 +2421,8 @@ async def checkad_cb(client, query):
         elapsed_time = time.time() - start_time
         
         # 🔥 THE STRICT 14-SECOND SCROLL TRAP
-        if elapsed_time < 14:
-            remaining = int(14 - elapsed_time)
+        if elapsed_time < 25:
+            remaining = int(25 - elapsed_time)
             return await query.answer(
                 f"🚫 VERIFICATION FAILED!\n\n"
                 f"System API: Aapne channel ke bottom tak scroll nahi kiya.\n\n"
