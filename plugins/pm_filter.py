@@ -2347,7 +2347,7 @@ async def adopen_cb(client, query):
         user_id = query.from_user.id
         
         # 🚨 APNE AD WALE CHANNEL KA LINK YAHAN DAAL 👇
-        ad_channel_url = "https://t.me/RAXIWIN_With_STbhai/40435" 
+        ad_channel_url = "https://t.me/RAXIWIN_With_STbhai/40468" 
         
         # 📺 TERA GIF LINK YAHAN DAAL (Eg: Telegraph/ImgBB link)
         # Abhi maine ek samjhane ke liye standard scroll gif daali hai, apni wali replace kar lena
