@@ -252,6 +252,14 @@ async def Jisshu_start():
     bot_info = await JisshuBot.get_me()
     JisshuBot.username = bot_info.username
     await initialize_clients()
+
+    # 🚀 NAYA CODE: Startup par hi RapidFuzz aur Explore Cache load karne ke liye
+    try:
+        from plugins.pm_filter import build_title_cache
+        await build_title_cache()
+    except Exception as e:
+        print(f"Cache Load Error at Startup: {e}")
+
     for name in files:
         with open(name) as a:
             patt = Path(a.name)
